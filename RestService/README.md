@@ -25,3 +25,13 @@ _Перезапуск сервера: продукты удалились_
 - Снова запрашиваем все продукты, чтобы увидеть изменения
 
 ![getAllAfterDeleting](https://github.com/IdeaSeeker/NetworkCourse/blob/hw02/RestService/postman-examples/getAllAfterDeleting.png)
+
+## Запросы с иконками
+
+- Создаем продукт с иконкой в формате base64
+
+![postIcon](https://github.com/IdeaSeeker/NetworkCourse/blob/hw02/RestService/postman-examples/postIcon.png)
+
+- Проверяем, что продукт с иконкой сохранился на сервере
+
+![getIcon](https://github.com/IdeaSeeker/NetworkCourse/blob/hw02/RestService/postman-examples/getIcon.png)
