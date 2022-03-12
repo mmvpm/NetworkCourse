@@ -1,10 +1,12 @@
 import socket
 
+from util import read_from_socket
+
 server_port = 12321
 
-def read_from_socket(socket):
-    request = socket.recv(1024).decode('utf-8')
-    return request.split(' ')[1][1:] # path to the local file
+def get_path_from_socket(socket):
+    request = read_from_socket(socket)
+    return request.split(' ')[1][1:]
 
 def read_from_file(path):
     try:
@@ -32,7 +34,7 @@ def main():
         print(connection_socket)
 
         try:
-            path_to_file = read_from_socket(connection_socket)
+            path_to_file = get_path_from_socket(connection_socket)
             print('path:', path_to_file)
             file_content = read_from_file(path_to_file)
             if file_content is None:
