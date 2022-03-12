@@ -1,6 +1,7 @@
 import socket
 
-from util import read_from_socket
+from util import *
+from response import *
 
 server_port = 12321
 
@@ -8,34 +9,18 @@ def get_path_from_socket(socket):
     request = read_from_socket(socket)
     return request.split(' ')[1][1:]
 
-def read_from_file(path):
-    try:
-        with open(path, 'rt') as file:
-            return file.read()
-    except:
-        return None
-
-def bad_request_response():
-    return b'HTTP/1.1 400 Bad Request\r\n\r\n'
-
-def not_found_response():
-    return b'HTTP/1.1 404 Not Found\r\n\r\n'
-
-def ok_response(content):
-    return bytes(f'HTTP/1.1 200 OK\r\nContent-Length: {len(content)}\r\n\r\n{content}', 'utf-8')
-
 def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('', server_port))
     server_socket.listen(1)
 
     while True:
-        connection_socket, _ = server_socket.accept()
-        print(connection_socket)
+        connection_socket, address = server_socket.accept()
+        print(f'Open connection to {address}')
 
         try:
             path_to_file = get_path_from_socket(connection_socket)
-            print('path:', path_to_file)
+            print(f'Request: {path_to_file}')
             file_content = read_from_file(path_to_file)
             if file_content is None:
                 connection_socket.send(not_found_response())
@@ -46,6 +31,7 @@ def main():
             connection_socket.send(bad_request_response())
 
         connection_socket.close()
+        print(f'Close connection to {address}')
 
 if __name__ == '__main__':
     main()
