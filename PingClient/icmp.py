@@ -7,9 +7,6 @@ class ICMP:
     ECHO_REQUEST_TYPE = 8
     ECHO_REQUEST_CODE = 0
 
-    ECHO_REPLY_TYPE = 0
-    ECHO_REPLY_CODE = 0
-
     HEADER_SIZE = 4
     STRUCT_FORMAT = 'BBH' # [uint8, uint8, uint16]
     IP_HEADER_SIZE = 20
