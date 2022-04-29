@@ -33,21 +33,20 @@ class PingClient:
 
     def receive_ping_reply(self, expected_id: int, expected_seq: int) -> PingResponse:
         try:
-            ip_packet, _ = self.socket.recvfrom(1024)
-            icmp_reply = ICMP.parse_packet(ip_packet)
+            while True:
+                ip_packet, _ = self.socket.recvfrom(1024)
+                icmp_reply = ICMP.parse_packet(ip_packet)
 
-            if isinstance(icmp_reply.data, EchoData):
-                echo_reply: EchoData = icmp_reply.data
-                if echo_reply.id == expected_id and echo_reply.seq == expected_seq:
-                    return PingResponse.SUCCESS
+                if isinstance(icmp_reply.data, EchoData):
+                    echo_reply: EchoData = icmp_reply.data
+                    if echo_reply.id == expected_id and echo_reply.seq == expected_seq:
+                        return PingResponse.SUCCESS
 
-            elif isinstance(icmp_reply.data, ErrorData):
-                error_reply: ErrorData = icmp_reply.data
-                nested_echo: EchoData = error_reply.icmp.data
-                if nested_echo.id == expected_id and nested_echo.seq == expected_seq:
-                    return PingResponse.from_error_code(icmp_reply.code)
+                if isinstance(icmp_reply.data, ErrorData):
+                    error_reply: ErrorData = icmp_reply.data
+                    nested_echo: EchoData = error_reply.icmp.data
+                    if nested_echo.id == expected_id and nested_echo.seq == expected_seq:
+                        return PingResponse.from_error_code(icmp_reply.code)
 
         except socket.timeout:
             return PingResponse.TIMEOUT
-
-        return PingResponse.UNKNOWN_ERROR
