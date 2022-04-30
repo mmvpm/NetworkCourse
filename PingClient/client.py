@@ -18,7 +18,7 @@ class PingClient:
         try:
             host = socket.gethostbyname(host)
         except socket.gaierror:
-            return host, PingResponse.UNKNOWN_HOST, 0
+            return host, 0, PingResponse.UNKNOWN_HOST, 0
 
         packet_id = os.getpid() & 0xFFFF
 
