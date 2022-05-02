@@ -42,12 +42,14 @@ class ICMP:
             return EchoData.from_bytes(data)
         if type == 3:
             return ErrorData.from_bytes(data)
+        if type == 11:
+            return ExpiredTTLData.from_bytes(data)
         return None
 
     @staticmethod
-    def parse_packet(ip_packet: bytes) -> "ICMP":
+    def parse_packet(ip_packet: bytes, verify_checksum = True) -> "ICMP":
         _, icmp_part = split_bytes(ip_packet, ICMP.IP_HEADER_SIZE)
-        if not checksum_verify(icmp_part):
+        if verify_checksum and not checksum_verify(icmp_part):
             print('Checksum verification failed')
             return None
         header_bytes, data_bytes = split_bytes(icmp_part, ICMP.HEADER_SIZE)
@@ -112,8 +114,32 @@ class ErrorData(ICMPData):
     @staticmethod
     def from_bytes(raw_data: bytes) -> "ErrorData":
         unused, nested_ip_packet = split_bytes(raw_data, ErrorData.HEADER_SIZE)
-        nested_icmp = ICMP.parse_packet(nested_ip_packet)
+        # no checksum verification for nested packets
+        nested_icmp = ICMP.parse_packet(nested_ip_packet, verify_checksum=False)
         return ErrorData(nested_icmp, unused)
+
+    def to_bytes(self) -> bytes:
+        return self.unused + self.icmp.to_bytes()
+
+
+class ExpiredTTLData(ICMPData):
+    '''ICMPData with type 11: TTL has expired.'''
+
+    HEADER_SIZE = 4
+    STRUCT_FORMAT = 'HH' # unused
+
+    def __init__(self, icmp: ICMP, unused: bytes = None):
+        self.icmp = icmp
+        if unused is None:
+            unused = struct.pack(ExpiredTTLData.STRUCT_FORMAT, 0, 0)
+        self.unused = unused
+
+    @staticmethod
+    def from_bytes(raw_data: bytes) -> "ExpiredTTLData":
+        unused, nested_ip_packet = split_bytes(raw_data, ExpiredTTLData.HEADER_SIZE)
+        # no checksum verification for nested packets
+        nested_icmp = ICMP.parse_packet(nested_ip_packet, verify_checksum=False)
+        return ExpiredTTLData(nested_icmp, unused)
 
     def to_bytes(self) -> bytes:
         return self.unused + self.icmp.to_bytes()
