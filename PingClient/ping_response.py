@@ -6,7 +6,7 @@ class PingResponse(Enum):
     UNKNOWN_HOST = 2
     UNREACHABLE_HOST = 3
     UNREACHABLE_NETWORK = 4
-    UNKNOWN_ERROR = 4
+    UNKNOWN_ERROR = 5
 
     @staticmethod
     def from_error_code(code: int) -> "PingResponse":
