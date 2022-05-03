@@ -47,5 +47,6 @@ class PaintClient(PaintBase):
                 x, y = pygame.mouse.get_pos()
                 self.draw_point(x, y)
 
+
 if __name__ == '__main__':
     PaintClient().run()
