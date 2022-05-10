@@ -1,7 +1,7 @@
 import time
 import socket
-from threading import Thread
 from node import Node
+from threading import Thread
 from node_info import NodeInfo
 
 # configuration
