@@ -12,3 +12,7 @@ suspend fun PipelineContext<Unit, ApplicationCall>.badRequest() =
 // 404 NotFound
 suspend fun PipelineContext<Unit, ApplicationCall>.productNotFound() =
     call.respondText("Product Not Found", status = HttpStatusCode.NotFound)
+
+// 404 NotFound
+suspend fun PipelineContext<Unit, ApplicationCall>.userNotFound() =
+    call.respondText("User Not Found", status = HttpStatusCode.NotFound)
