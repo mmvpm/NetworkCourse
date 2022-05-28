@@ -5,8 +5,8 @@ import model.User
 
 class UserDao {
 
-    fun registerUser(user: User): Token {
-        users.add(user)
+    fun registerUser(user: User, clientIp: String): Token {
+        users.add(user.copy(ip = clientIp))
         return generateNewToken()
     }
 
@@ -18,6 +18,11 @@ class UserDao {
 
     fun isKnownToken(token: Token?) =
         token != null && token in knownTokens
+
+    fun findByIp(clientIp: String) =
+        users.firstOrNull { user ->
+            user.ip == clientIp
+        }
 
     // internal
 

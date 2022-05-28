@@ -6,6 +6,7 @@ import error.badRequest
 import error.productNotFound
 import error.userNotFound
 import io.ktor.application.*
+import io.ktor.features.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -13,6 +14,7 @@ import model.Product
 import model.ProductTemplate
 import model.Token
 import model.User
+import java.util.*
 
 object ProductService {
 
@@ -39,10 +41,26 @@ object ProductService {
 
     private val userDao = UserDao()
 
+    private val timerByUserEmail = mutableMapOf<String, Timer?>()
+
+    private fun createTimerTask(email: String) =
+        object : TimerTask() {
+            override fun run() {
+                EmailSender.sendEmail(email)
+            }
+        }
+
     // GET: /product/{id}
     private fun Route.getProductById() =
         get("{id}") {
             val token = call.receiveOrNull<Token>()
+            if (token == null) {
+                userDao.findByIp(call.request.origin.remoteHost)?.let {
+                    timerByUserEmail[it.email]?.cancel()
+                    timerByUserEmail[it.email] = Timer()
+                    timerByUserEmail[it.email]!!.schedule(createTimerTask(it.email), 1000L)
+                }
+            }
             val productId = call.parameters["id"] ?: return@get badRequest()
             val product = productDao.getById(productId, userDao.isKnownToken(token))
                 ?: return@get productNotFound()
@@ -81,6 +99,13 @@ object ProductService {
     private fun Route.getAllProducts() =
         get {
             val token = call.receiveOrNull<Token>()
+            if (token == null) {
+                userDao.findByIp(call.request.origin.remoteHost)?.let {
+                    timerByUserEmail[it.email]?.cancel()
+                    timerByUserEmail[it.email] = Timer()
+                    timerByUserEmail[it.email]!!.schedule(createTimerTask(it.email), 1000L)
+                }
+            }
             call.respond(
                 if (userDao.isKnownToken(token))
                     productDao.getAllWithPrivate()
@@ -93,7 +118,9 @@ object ProductService {
     private fun Route.registerUser() =
         post("register") {
             val newUser = call.receiveOrNull<User>() ?: return@post badRequest()
-            val token = userDao.registerUser(newUser)
+            val clientIp = call.request.origin.remoteHost
+            val token = userDao.registerUser(newUser, clientIp)
+            timerByUserEmail[newUser.email] = null
             call.respond(token)
         }
 
